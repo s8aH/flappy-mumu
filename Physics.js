@@ -1,10 +1,15 @@
 import Matter from 'matter-js';
 import CoralTop from './CoralTop';
 import CoralBottom from './CoralBottom';
+import PolyDecomp from 'poly-decomp';
+
 
 let tick = 0;
 let pose = 1;
 let corals = 0;
+
+// Set the decomposition library for Matter.js
+Matter.Common.setDecomp(PolyDecomp);
 
 // generates a random number > min and < min+(max-min+1)
 export const randomBetween = (min, max) => {
@@ -32,21 +37,34 @@ export const generateCorals = () => {
 export const addCoralsAtLocation = (x, world, entities) => {
   let [coral1Height, coral2Height] = generateCorals();
 
-  let coral1 = Matter.Bodies.trapezoid(
+  const scaleYtop = coral1Height / 300;
+  const scaleYbottom = coral2Height / 300;
+  const scaleX = Constants.CORAL_WIDTH / 190;
+  
+  const coralVertices_top = [
+    [0, 0], [1, 115], [4, 128], [16, 150], [26, 170], [15, 200], 
+    [29, 256], [47, 258], [55, 280], [63, 290], [93, 290], 
+    [100, 298], [114, 299], [124, 300], [163, 250], [179, 225], 
+    [188, 193], [190, 114], [189, 51], [189, 0] 
+  ];
+
+  const coralVertices_bottom = [
+    [0, 300], [2, 244], [2, 187], [3, 106], [12, 75], [27, 51],
+    [52, 37], [70, 0], [92 ,5], [129, 13], [160, 44], [170, 82],
+    [181, 86], [173, 151], [188, 174], [190, 300]
+  ];
+
+  let coral1 = Matter.Bodies.fromVertices(
     x,
     coral1Height / 2,
-    Constants.CORAL_WIDTH,
-    coral1Height,
-    1,
+    coralVertices_top.map(([x1, y1]) => ({ x: x1 * scaleX, y: y1 * scaleYtop })),
     { isStatic: true }
   );
 
-  let coral2 = Matter.Bodies.trapezoid(
+  let coral2 = Matter.Bodies.fromVertices(
     x,
     Constants.MAX_HEIGHT - 50 - (coral2Height / 2),
-    Constants.CORAL_WIDTH,
-    coral2Height,
-    1,
+    coralVertices_bottom.map(([x1, y1]) => ({ x: x1 * scaleX, y: y1 * scaleYbottom })),
     { isStatic: true }
   );
 
